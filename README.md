@@ -2987,6 +2987,7 @@ public class ExternalServiceHealthIndicator implements HealthIndicator {
 - MySQL 8.0+
 - Docker & Docker Compose
 - Git
+- Python3
 ```
 
 ### Quick Setup
@@ -3009,6 +3010,13 @@ cd backend
 # Start frontend (in new terminal)
 cd frontend
 npm start
+
+# Start chatbot (in new terminal)
+cd chatbot-service
+python -m venv venv
+source venv/bin/activate
+pip install
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 ### Access Points
@@ -3016,6 +3024,7 @@ npm start
 - **Backend API**: http://localhost:8080
 - **API Documentation**: http://localhost:8080/swagger-ui.html
 - **Database**: localhost:3306 (automobile_service)
+-
 
 ---
 
