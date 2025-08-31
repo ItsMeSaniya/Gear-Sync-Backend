@@ -3028,4 +3028,4 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8001
 
 ---
 
-This comprehensive architecture document provides a complete blueprint for building the Automobile Service Management System. Each team member has clear responsibilities, and the system is designed to be scalable, maintainable, and production-ready.
+This comprehensive architecture document provides a complete blueprint for building the Automobile Service Management System. Each team member has clear responsibilities, and the system is designed to be scalable, maintainable, and production-ready..
