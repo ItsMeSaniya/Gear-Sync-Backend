@@ -2,7 +2,8 @@ import React, { createContext, useState, ReactNode, useEffect } from "react";
 
 interface AuthContextType {
   token: string | null;
-  login: (token: string) => void;
+  role: "CUSTOMER" | "EMPLOYEE" | "ADMIN" | null;
+  login: (token: string, role: "CUSTOMER" | "EMPLOYEE" | "ADMIN") => void;
   logout: () => void;
 }
 
@@ -12,6 +13,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
+  const [role, setRole] = useState<AuthContextType["role"]>(
+    localStorage.getItem("role") as AuthContextType["role"]
+  );
 
   useEffect(() => {
     if (token) {
@@ -19,13 +23,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       localStorage.removeItem("token");
     }
-  }, [token]);
 
-  const login = (jwt: string) => setToken(jwt);
-  const logout = () => setToken(null);
+    if (role) {
+      localStorage.setItem("role", role);
+    } else {
+      localStorage.removeItem("role");
+    }
+  }, [token, role]);
+
+  const login = (jwt: string, userRole: AuthContextType["role"]) => {
+    setToken(jwt);
+    setRole(userRole);
+  };
+
+  const logout = () => {
+    setToken(null);
+    setRole(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ token, role, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

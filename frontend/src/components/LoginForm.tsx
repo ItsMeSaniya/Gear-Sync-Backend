@@ -1,28 +1,41 @@
 import React, { useState, useContext } from "react";
 import { login } from "../api/auth";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
-  const { login: saveToken } = useContext(AuthContext)!;
+  const auth = useContext(AuthContext);
+
+  if (!auth) {
+    throw new Error("AuthContext must be used inside AuthProvider");
+  }
+
+  const { login: saveAuth } = auth;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await login({ email, password });
-      saveToken(res.token);
-      alert("Login success!");
+      const res = await login({ email, password }); 
+      // res = { token, role }
+      saveAuth(res.token, res.role);
+      alert(`Login success as ${res.role}!`);
+      if (res.role === "ADMIN") {
+      navigate("/admin-dashboard");
+    } else if (res.role === "EMPLOYEE") {
+      navigate("/employee-dashboard");
+    } else if (res.role === "CUSTOMER") {
+      navigate("/customer-dashboard");
+    }
     } catch {
       alert("Invalid credentials");
     }
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="flex flex-col gap-4"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <input
         type="email"
         value={email}
