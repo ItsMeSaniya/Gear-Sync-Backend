@@ -1,5 +1,7 @@
 package com.gearsync.backend.model;
 
-public class Role {
-    
+public enum Role {
+    ADMIN,
+    EMPLOYEE,
+    CUSTOMER
 }

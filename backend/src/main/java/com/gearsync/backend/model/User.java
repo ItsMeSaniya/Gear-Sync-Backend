@@ -18,12 +18,17 @@ public class User {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role; 
+
     public User() {}
 
-    public User(String email, String password, String name) {
+    public User(String email, String password, String name, Role role) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.role = role;
     }
 
     public Long getId() { return id; }
@@ -41,4 +46,8 @@ public class User {
     public String getName() { return name; }
 
     public void setName(String name) { this.name = name; }
+
+    public Role getRole() { return role; }
+
+    public void setRole(Role role) { this.role = role; }
 }

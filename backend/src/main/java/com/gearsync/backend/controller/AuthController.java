@@ -33,12 +33,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        boolean isAuthenticated = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
-
-        String jwtToken = jwtUtil.generateToken(loginRequest.getEmail());
-        return ResponseEntity.ok(Map.of("token", jwtToken));
+    boolean isAuthenticated = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+    if (!isAuthenticated) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
+
+    User user = authService.findByEmail(loginRequest.getEmail()); // 👈 fetch user
+    String jwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
+
+    return ResponseEntity.ok(Map.of("token", jwtToken, "role", user.getRole().name()));
+}
+
 }

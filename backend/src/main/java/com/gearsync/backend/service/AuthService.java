@@ -34,4 +34,9 @@ public class AuthService {
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
+    // 👇 Add this so controller can fetch the full User
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
 }
