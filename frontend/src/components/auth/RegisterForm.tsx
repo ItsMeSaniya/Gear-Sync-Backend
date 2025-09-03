@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { register, RegisterRequest } from "../api/auth";
+import { register, RegisterRequest } from "../../api/auth";
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState("");

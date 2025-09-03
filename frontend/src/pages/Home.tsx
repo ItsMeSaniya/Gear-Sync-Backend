@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Car, Wrench, Calendar, Clock, Users, MessageCircle, CheckCircle, ArrowRight, Phone, Mail, MapPin } from "lucide-react";
-import LoginForm from "../components/LoginForm";
-import RegisterForm from "../components/RegisterForm";
+import LoginForm from "../components/auth/LoginForm";
+import RegisterForm from "../components/auth/RegisterForm";
 
 const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState('login');

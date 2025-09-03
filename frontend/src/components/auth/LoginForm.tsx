@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
-import { login } from "../api/auth";
-import { AuthContext } from "../context/AuthContext";
+import { login } from "../../api/auth";
+import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
