@@ -5,12 +5,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.pos</groupId>
-    <artifactId>pos-backend</artifactId>
+    <groupId>com.gearsync</groupId>
+    <artifactId>gearsync-backend</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>POS Backend</name>
+    <name>GearSync Backend</name>
     <description>Spring Boot Point of Sale System</description>
 
     <parent>
@@ -94,13 +94,6 @@
             <version>2.3.1</version>
         </dependency>
 
-        <!-- PostgreSQL Driver -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        
         <!-- Spring Boot Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
