@@ -3,6 +3,7 @@ package com.gearsync.backend.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.gearsync.backend.model.Role;
 
@@ -11,8 +12,9 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String secretKey = "your-secret-key"; // Use env variable in production
-    private final long expirationMs = 86400000; // 24 hours
+    @Value("${jwt.secret}")
+    private String secretKey;
+    private long expirationMs = 86400000; // 24 hours
 
     public String generateToken(String email, Role role) {
         return Jwts.builder()
