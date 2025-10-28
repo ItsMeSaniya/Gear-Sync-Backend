@@ -1,6 +1,7 @@
 package com.gearsync.backend.controller;
 
 import com.gearsync.backend.dto.LoginRequest;
+import com.gearsync.backend.dto.UserRegisterDTO;
 import com.gearsync.backend.model.User;
 import com.gearsync.backend.security.JwtUtil;
 import com.gearsync.backend.service.AuthService;
@@ -22,12 +23,17 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @GetMapping("/test")
+    public String test() {
+        return "AuthController is working!";
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        if (authService.isEmailRegistered(user.getEmail())) {
+    public ResponseEntity<?> register(@RequestBody UserRegisterDTO userRegisterDTO) {
+        if (authService.isEmailRegistered(userRegisterDTO.getEmail())) {
             return ResponseEntity.badRequest().body("Email already registered");
         }
-        User saved = authService.register(user);
+        User saved = authService.register(userRegisterDTO);
         return ResponseEntity.ok(saved);
     }
 
@@ -37,11 +43,11 @@ public class AuthController {
     if (!isAuthenticated) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
-
-    User user = authService.findByEmail(loginRequest.getEmail()); // 👈 fetch user
+    User user = authService.findByEmail(loginRequest.getEmail());
     String jwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
-
-    return ResponseEntity.ok(Map.of("token", jwtToken, "role", user.getRole().name()));
-}
-
+    return ResponseEntity.ok(Map.of(
+                "token", jwtToken,
+                "role", user.getRole().name()
+        ));
+    }
 }
