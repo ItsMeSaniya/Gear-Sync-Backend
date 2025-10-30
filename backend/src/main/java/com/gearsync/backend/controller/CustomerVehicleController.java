@@ -1,16 +1,20 @@
 package com.gearsync.backend.controller;
 import com.gearsync.backend.dto.VehicleRequestDTO;
 import com.gearsync.backend.dto.VehicleResponseDTO;
+import com.gearsync.backend.exception.UserNotFoundException;
+import com.gearsync.backend.exception.VehicleAlreadyExistsException;
+import com.gearsync.backend.exception.VehicleNotFoundException;
 import com.gearsync.backend.model.Vehicle;
 import com.gearsync.backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customer/vehicles")
@@ -30,13 +34,23 @@ public class CustomerVehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<VehicleResponseDTO> addMyVehicle(
+    public ResponseEntity<?> addMyVehicle(
             Authentication authentication,
             @RequestBody VehicleRequestDTO payload) {
 
-        VehicleResponseDTO response =
-                vehicleService.addMyVehicle(authentication.getName(), payload);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        try {
+            VehicleResponseDTO response = vehicleService.addMyVehicle(authentication.getName(), payload);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (VehicleAlreadyExistsException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", ex.getMessage()));
+        } catch (UserNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Something went wrong"));
+        }
     }
 
     @PutMapping("/{id}")
@@ -53,9 +67,17 @@ public class CustomerVehicleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable Long id) {
-        vehicleService.deleteMyVehicle(authentication.getName(), id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(Authentication authentication, @PathVariable Long id) {
+        try {
+            vehicleService.deleteMyVehicle(authentication.getName(), id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (UserNotFoundException | VehicleNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Something went wrong"));
+        }
     }
 }
 
