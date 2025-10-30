@@ -3,3 +3,6 @@
 .DS_Store
 .env
 .application-dev.yml
+backend/.idea
+.idea
+
