@@ -2,6 +2,9 @@ package com.gearsync.backend.service;
 
 import com.gearsync.backend.dto.VehicleRequestDTO;
 import com.gearsync.backend.dto.VehicleResponseDTO;
+import com.gearsync.backend.exception.UserNotFoundException;
+import com.gearsync.backend.exception.VehicleAlreadyExistsException;
+import com.gearsync.backend.exception.VehicleNotFoundException;
 import com.gearsync.backend.model.User;
 import com.gearsync.backend.model.Vehicle;
 import com.gearsync.backend.repository.UserRepository;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +40,11 @@ public class VehicleService {
     @Transactional
     public VehicleResponseDTO addMyVehicle(String email, VehicleRequestDTO payload) {
         User me = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (vehicleRepository.existsByRegistrationNumber(payload.getRegistrationNumber())) {
+            throw new VehicleAlreadyExistsException(
+                    "Vehicle with registration number " + payload.getRegistrationNumber() + " already exists");
+        }
         Vehicle vehicle = modelMapper.map(payload, Vehicle.class);
         vehicle.setOwner(me);
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
@@ -44,6 +52,7 @@ public class VehicleService {
         response.setOwnerEmail(me.getEmail());
         return response;
     }
+
 
 
     @Transactional
@@ -59,11 +68,14 @@ public class VehicleService {
         return vehicleRepository.save(existing);
     }
 
-
-
     @Transactional
     public void deleteMyVehicle(String email, Long id) {
-        Vehicle existing = getMyVehicle(email, id);
-        vehicleRepository.delete(existing);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("Vehicle not found"));
+        vehicleRepository.delete(vehicle);
     }
+
+
 }
