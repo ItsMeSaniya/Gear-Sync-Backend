@@ -14,12 +14,12 @@ public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String secretKey;
-    private long expirationMs = 86400000; // 24 hours
+    private long expirationMs = 86400000;
 
     public String generateToken(String email, Role role) {
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
+                .claim("role", "ROLE_" + role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(SignatureAlgorithm.HS512, secretKey)
@@ -37,4 +37,13 @@ public class JwtUtil {
             return null;
         }
     }
+
+    public String extractRole(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class);
+    }
+
 }

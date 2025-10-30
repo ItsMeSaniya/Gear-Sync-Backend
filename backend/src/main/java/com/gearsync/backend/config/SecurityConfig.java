@@ -29,6 +29,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/customer/**").hasAuthority("ROLE_CUSTOMER")
+                    .requestMatchers("api/employee/**").hasAuthority("ROLE_EMPLOYEE")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
