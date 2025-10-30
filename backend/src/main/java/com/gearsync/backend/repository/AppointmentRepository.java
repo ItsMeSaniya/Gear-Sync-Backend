@@ -2,7 +2,9 @@ package com.gearsync.backend.repository;
 
 import com.gearsync.backend.model.Appointment;
 import com.gearsync.backend.model.AppointmentStatus;
+import com.gearsync.backend.model.Services;
 import com.gearsync.backend.model.User;
+import com.gearsync.backend.service.AppointmentService;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -57,7 +59,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("currentDateTime") LocalDateTime currentDateTime
     );
 
-    // Check if customer has appointment at given time (to prevent double booking)
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Appointment a " +
             "WHERE a.customer.id = :customerId " +
             "AND a.scheduledDateTime = :scheduledDateTime " +
@@ -67,9 +68,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("scheduledDateTime") LocalDateTime scheduledDateTime
     );
 
-    // Count active appointments for a customer
     @Query("SELECT COUNT(a) FROM Appointment a WHERE a.customer.id = :customerId " +
             "AND a.status IN ('SCHEDULED', 'CONFIRMED', 'IN_PROGRESS')")
     long countActiveAppointmentsByCustomer(@Param("customerId") Long customerId);
 
+    List<Services> findAppointmentServicesById(Long appointmentId);
 }

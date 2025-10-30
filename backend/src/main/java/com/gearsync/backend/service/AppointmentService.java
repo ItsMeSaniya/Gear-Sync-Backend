@@ -1,9 +1,6 @@
 package com.gearsync.backend.service;
 
-import com.gearsync.backend.dto.AppointmentRequestDTO;
-import com.gearsync.backend.dto.AppointmentResponseDTO;
-import com.gearsync.backend.dto.MyAppointmentDTO;
-import com.gearsync.backend.dto.ServiceSummaryDTO;
+import com.gearsync.backend.dto.*;
 import com.gearsync.backend.exception.*;
 import com.gearsync.backend.model.*;
 import com.gearsync.backend.repository.AppointmentRepository;
@@ -17,11 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -201,4 +197,159 @@ public class AppointmentService {
         MyAppointmentDTO response = modelMapper.map(appointment, MyAppointmentDTO.class);
         return response;
     }
+
+    @Transactional
+    public UpdateAppointmentRequestDTO updateAppointment(
+            String customerEmail,
+            Long appointmentId,
+            UpdateAppointmentRequestDTO request) {
+
+        User customer = userRepository.findByEmail(customerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
+
+        if (!appointment.getCustomer().getId().equals(customer.getId())) {
+            throw new UnauthorizedException("You can only update your own appointments");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Cannot update appointment that is currently in progress");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot update a completed appointment");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot update a cancelled appointment");
+        }
+
+        boolean isUpdated = false;
+
+        if (request.getVehicleId() != null && !request.getVehicleId().equals(appointment.getVehicle().getId())) {
+            Vehicle newVehicle = vehicleRepository.findById(request.getVehicleId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));
+
+            if (!newVehicle.getOwner().getId().equals(customer.getId())) {
+                throw new UnauthorizedException("You can only select your own vehicles");
+            }
+
+            appointment.setVehicle(newVehicle);
+            isUpdated = true;
+        }
+
+        if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
+            List<Services> newServices = serviceRepository.findAllById(request.getServiceIds());
+
+            if (newServices.size() != request.getServiceIds().size()) {
+                throw new ResourceNotFoundException("One or more services not found");
+            }
+
+            for (Services service : newServices) {
+                if (!service.getIsActive()) {
+                    throw new IllegalArgumentException("Service '" + service.getServiceName() + "' is not available");
+                }
+            }
+            appointment.getAppointmentServices().clear();
+            appointment.setAppointmentServices(new HashSet<>(newServices));
+            isUpdated = true;
+        }
+
+        if (request.getScheduledDateTime() != null &&
+                !request.getScheduledDateTime().equals(appointment.getScheduledDateTime())) {
+
+            if (request.getScheduledDateTime().isBefore(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Cannot schedule appointment in the past");
+            }
+
+            boolean hasConflict = appointmentRepository.existsByCustomerAndScheduledDateTime(
+                    customer.getId(), request.getScheduledDateTime());
+
+            if (hasConflict) {
+                List<Appointment> conflictingAppointments = appointmentRepository
+                        .findByCustomerIdAndStatus(customer.getId(), AppointmentStatus.SCHEDULED);
+
+                boolean isDifferentAppointment = conflictingAppointments.stream()
+                        .filter(a -> a.getScheduledDateTime().equals(request.getScheduledDateTime()))
+                        .anyMatch(a -> !a.getId().equals(appointmentId));
+
+                if (isDifferentAppointment) {
+                    throw new DuplicateResourceException(
+                            "You already have an appointment scheduled at " + request.getScheduledDateTime()
+                    );
+                }
+            }
+            appointment.setScheduledDateTime(request.getScheduledDateTime());
+            if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+                appointment.setStatus(AppointmentStatus.RESCHEDULED);
+            }
+            isUpdated = true;
+        }
+
+        if (request.getCustomerNotes() != null) {
+            appointment.setCustomerNotes(request.getCustomerNotes());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No valid fields provided for update");
+        }
+
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        UpdateAppointmentRequestDTO updateAppointmentRequestDTO = new UpdateAppointmentRequestDTO();
+        updateAppointmentRequestDTO.setVehicleId(updatedAppointment.getVehicle().getId());
+        updateAppointmentRequestDTO.setScheduledDateTime(updatedAppointment.getScheduledDateTime());
+        updateAppointmentRequestDTO.setCustomerNotes(updatedAppointment.getCustomerNotes());
+        updateAppointmentRequestDTO.setServiceIds(
+                updatedAppointment.getAppointmentServices().stream()
+                        .map(Services::getId)
+                        .collect(Collectors.toList())
+        );
+        return updateAppointmentRequestDTO;
+    }
+
+    @Transactional
+    public AppointmentResponseDTO cancelAppointment(String customerEmail, Long appointmentId) {
+
+        User customer = userRepository.findByEmail(customerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+
+        if (!appointment.getCustomer().getId().equals(customer.getId())) {
+            throw new UnauthorizedException("You can only cancel your own appointments");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new IllegalStateException("Appointment is already cancelled");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot cancel a completed appointment");
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        Appointment updated = appointmentRepository.save(appointment);
+        List<Services> services = new ArrayList<>(appointment.getAppointmentServices());
+        return convertToResponseDTO(updated, services);
+    }
+
+    @Transactional
+    public void deleteAppointment(String customerEmail, Long appointmentId) {
+        User customer = userRepository.findByEmail(customerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+
+        if (!appointment.getCustomer().getId().equals(customer.getId())) {
+            throw new UnauthorizedException("You can only delete your own appointments");
+        }
+
+        appointmentRepository.delete(appointment);
+    }
+
 }
