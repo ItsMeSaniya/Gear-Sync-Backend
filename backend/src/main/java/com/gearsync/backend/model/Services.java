@@ -1,13 +1,9 @@
 package com.gearsync.backend.model;
-
-import com.gearsync.backend.model.ServiceCategory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -15,10 +11,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "services")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Service {
+public class Services {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +31,7 @@ public class Service {
     private BigDecimal basePrice;
 
     @Column(nullable = false)
-    private Integer estimatedDurationMinutes; // e.g., 60 for 1 hour
+    private Integer estimatedDurationMinutes;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,8 +48,7 @@ public class Service {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Relationships
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "appointmentServices")
     private Set<Appointment> appointments = new HashSet<>();
 
 }

@@ -1,8 +1,7 @@
 package com.gearsync.backend.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
@@ -12,7 +11,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "appointments")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Appointment {
@@ -59,9 +59,14 @@ public class Appointment {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    @ManyToMany
+    @JoinTable(
+            name = "appointment_services",
+            joinColumns = @JoinColumn(name = "appointment_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id")
+    )
+    private Set<Services> appointmentServices = new HashSet<>();
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_employee_id")
