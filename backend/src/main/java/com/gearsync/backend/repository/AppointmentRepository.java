@@ -72,5 +72,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "AND a.status IN ('SCHEDULED', 'CONFIRMED', 'IN_PROGRESS')")
     long countActiveAppointmentsByCustomer(@Param("customerId") Long customerId);
 
-    List<Services> findAppointmentServicesById(Long appointmentId);
 }
