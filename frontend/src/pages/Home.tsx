@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Car, Wrench, Calendar, Clock, Users, MessageCircle, CheckCircle, ArrowRight, Phone, Mail, MapPin } from "lucide-react";
 import LoginForm from "../components/auth/LoginForm";
 import RegisterForm from "../components/auth/RegisterForm";
+import ChatWidget from "../components/ChatWidget"; 
 
 const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState('login');
@@ -232,12 +233,15 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Action Button for Quick Appointment */}
+      {/* Floating Action Button for Chatbot */}
       <div className="fixed bottom-8 right-8 z-50">
-        <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/25 transform hover:scale-110 transition-all duration-300 group">
-          <Calendar className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+        <button className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4 rounded-full shadow-2xl hover:shadow-pink-500/25 transform hover:scale-110 transition-all duration-300 group">
+          <MessageCircle className="w-6 h-6 group-hover:rotate-12 transition-transform" />
         </button>
       </div>
+
+      {/* Chat Widget */}
+      <ChatWidget />
 
       {/* Animated Car Icon */}
       <div className="fixed bottom-0 left-0 w-full h-32 pointer-events-none overflow-hidden">
