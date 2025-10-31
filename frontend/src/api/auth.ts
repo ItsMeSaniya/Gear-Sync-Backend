@@ -21,7 +21,9 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  name: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
   email: string;
   password: string;
   role?: "CUSTOMER" | "EMPLOYEE" | "ADMIN";

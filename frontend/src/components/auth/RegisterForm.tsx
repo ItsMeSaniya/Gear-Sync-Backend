@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { register, RegisterRequest } from "../../api/auth";
 
 const RegisterForm: React.FC = () => {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<RegisterRequest["role"]>("CUSTOMER");
@@ -10,7 +12,7 @@ const RegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
-    const payload: RegisterRequest = { name, email, password, role };
+    const payload: RegisterRequest = { firstName, lastName, phoneNumber, email, password, role };
     const res = await register(payload);
     console.log("Registered user:", res);
     alert("Registered successfully!");
@@ -23,16 +25,31 @@ const RegisterForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Name"
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        placeholder="First Name"
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
         required
       />
       <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        placeholder="Last Name"
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        required
+      />
+
+      <input
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        required
+      />
+      <input
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        placeholder="Phone Number"
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
         required
       />
