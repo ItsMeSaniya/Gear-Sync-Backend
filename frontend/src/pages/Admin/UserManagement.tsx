@@ -11,6 +11,7 @@ import {
   Mail,
   Phone,
   Calendar,
+  X,
 } from "lucide-react";
 import axios from "axios";
 
@@ -23,6 +24,15 @@ interface User {
   role: "CUSTOMER" | "EMPLOYEE" | "ADMIN";
   isActive: boolean;
   createdAt: string;
+}
+
+interface UserFormData {
+  email: string;
+  password?: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  role: "CUSTOMER" | "EMPLOYEE" | "ADMIN";
 }
 
 const UserManagement: React.FC = () => {
@@ -107,6 +117,62 @@ const UserManagement: React.FC = () => {
   const handleEdit = (user: User) => {
     setSelectedUser(user);
     setShowEditModal(true);
+  };
+
+  // Add new user
+  const handleAddUser = async (formData: UserFormData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:8085/api/auth/register",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Refresh user list
+      await fetchUsers();
+      setShowAddModal(false);
+      alert("User added successfully!");
+    } catch (error: any) {
+      console.error("Error adding user:", error);
+      alert(error.response?.data || "Failed to add user");
+    }
+  };
+
+  // Update existing user
+  const handleUpdateUser = async (formData: UserFormData) => {
+    if (!selectedUser) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      // TODO: Implement backend API for updating user
+      // For now, just update locally
+      setUsers(
+        users.map((u) =>
+          u.id === selectedUser.id
+            ? {
+                ...u,
+                email: formData.email,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phoneNumber: formData.phoneNumber,
+                role: formData.role,
+              }
+            : u
+        )
+      );
+      
+      setShowEditModal(false);
+      setSelectedUser(null);
+      alert("User updated successfully!");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user");
+    }
   };
 
   // Role badge color
@@ -389,6 +455,263 @@ const UserManagement: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <UserFormModal
+          title="Add New User"
+          onClose={() => setShowAddModal(false)}
+          onSubmit={handleAddUser}
+          isEditMode={false}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <UserFormModal
+          title="Edit User"
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleUpdateUser}
+          isEditMode={true}
+          initialData={selectedUser}
+        />
+      )}
+    </div>
+  );
+};
+
+// User Form Modal Component
+interface UserFormModalProps {
+  title: string;
+  onClose: () => void;
+  onSubmit: (data: UserFormData) => void;
+  isEditMode: boolean;
+  initialData?: User;
+}
+
+const UserFormModal: React.FC<UserFormModalProps> = ({
+  title,
+  onClose,
+  onSubmit,
+  isEditMode,
+  initialData,
+}) => {
+  const [formData, setFormData] = useState<UserFormData>({
+    email: initialData?.email || "",
+    password: "",
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
+    phoneNumber: initialData?.phoneNumber || "",
+    role: initialData?.role || "CUSTOMER",
+  });
+
+  const [errors, setErrors] = useState<Partial<UserFormData>>({});
+
+  const validateForm = () => {
+    const newErrors: Partial<UserFormData> = {};
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+
+    if (!isEditMode && !formData.password) {
+      newErrors.password = "Password is required";
+    } else if (!isEditMode && formData.password && formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!formData.firstName) {
+      newErrors.firstName = "First name is required";
+    }
+
+    if (!formData.lastName) {
+      newErrors.lastName = "Last name is required";
+    }
+
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(formData);
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field
+    if (errors[name as keyof UserFormData]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="john@example.com"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Password (only for add mode) */}
+          {!isEditMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter password"
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
+            </div>
+          )}
+
+          {/* First Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.firstName ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="John"
+            />
+            {errors.firstName && (
+              <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+            )}
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.lastName ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Doe"
+            />
+            {errors.lastName && (
+              <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+            )}
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.phoneNumber ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="1234567890"
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+            )}
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="CUSTOMER">Customer</option>
+              <option value="EMPLOYEE">Employee</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {isEditMode ? "Update" : "Add"} User
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
