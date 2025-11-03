@@ -28,7 +28,7 @@ const EmployeeSidebar: React.FC = () => {
     {
       title: "My Assignments",
       icon: Calendar,
-      path: "/employee-dashboard/appointments",
+      path: "/employee-dashboard/assignments",
     },
     {
       title: "Active Projects",
