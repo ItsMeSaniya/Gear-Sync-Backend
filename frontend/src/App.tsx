@@ -5,7 +5,9 @@ import Home from "./pages/Home";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import EmployeeDashboard from "./pages/Employee/EmployeeDashboard";
 import CustomerDashboard from "./pages/Customer/CustomerDashboard";
+import UserManagement from "./pages/Admin/UserManagement";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import { AdminLayout, CustomerLayout, EmployeeLayout } from "./components/layouts";
 
 const App: React.FC = () => {
   return (
@@ -15,35 +17,42 @@ const App: React.FC = () => {
           {/* Public Route */}
           <Route path="/" element={<Home />} />
 
-          {/* Admin Dashboard */}
+          {/* Admin Routes with Layout */}
           <Route
             path="/admin-dashboard"
             element={
               <ProtectedRoute requiredRole="ADMIN">
-                <AdminDashboard />
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagement />} />
+          </Route>
 
-          {/* Employee Dashboard */}
+          {/* Employee Routes with Layout */}
           <Route
             path="/employee-dashboard"
             element={
               <ProtectedRoute requiredRole="EMPLOYEE">
-                <EmployeeDashboard />
+                <EmployeeLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<EmployeeDashboard />} />
+          </Route>
 
-          {/* Customer Dashboard */}
+          {/* Customer Routes with Layout */}
           <Route
             path="/customer-dashboard"
             element={
               <ProtectedRoute requiredRole="CUSTOMER">
-                <CustomerDashboard />
+                <CustomerLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<CustomerDashboard />} />
+          </Route>
 
           {/* Optional fallback route */}
           <Route path="*" element={<Home />} />
