@@ -5,4 +5,4 @@
 .application-dev.yml
 backend/.idea
 .idea
-
+/backend/src/main/resources/application.properties

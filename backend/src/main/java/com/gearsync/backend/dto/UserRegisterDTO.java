@@ -2,6 +2,7 @@ package com.gearsync.backend.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -22,6 +23,7 @@ public class UserRegisterDTO {
 
     private String phoneNumber;
 
+    @Pattern(regexp = "CUSTOMER|ADMIN", message = "Role must be CUSTOMER")
     private String role;
 
 }
