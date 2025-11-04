@@ -92,7 +92,7 @@ public class CustomerAppointmentsController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<AppointmentResponseDTO> cancelAppointment(
+    public ResponseEntity<?> cancelAppointment(
             Authentication authentication,
             @PathVariable Long id) {
 
@@ -102,9 +102,9 @@ public class CustomerAppointmentsController {
                     id);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException | UnauthorizedException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
