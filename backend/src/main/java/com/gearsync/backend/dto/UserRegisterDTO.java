@@ -23,7 +23,7 @@ public class UserRegisterDTO {
 
     private String phoneNumber;
 
-    @Pattern(regexp = "CUSTOMER|ADMIN", message = "Role must be CUSTOMER")
+    @Pattern(regexp = "CUSTOMER", message = "Role must be CUSTOMER")
     private String role;
 
 }

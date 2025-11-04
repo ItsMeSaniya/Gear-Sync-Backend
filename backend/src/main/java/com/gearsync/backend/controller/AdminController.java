@@ -20,7 +20,7 @@ public class AdminController {
 
     public final AdminServices adminServices;
 
-    @PostMapping("employees")
+    @PostMapping("/employees")
     public ResponseEntity<?> addEmployee(@Valid @RequestBody EmployeeRegisterDTO employeeRegisterDTO) {
         try {
             var response = adminServices.addEmployee(employeeRegisterDTO);
