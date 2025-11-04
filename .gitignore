@@ -6,3 +6,6 @@
 backend/.idea
 .idea
 /backend/src/main/resources/application.properties
+/.vscode
+package-lock.json
+

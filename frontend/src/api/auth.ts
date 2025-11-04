@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = "http://localhost:8085/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -21,7 +21,9 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  name: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
   email: string;
   password: string;
   role?: "CUSTOMER" | "EMPLOYEE" | "ADMIN";
