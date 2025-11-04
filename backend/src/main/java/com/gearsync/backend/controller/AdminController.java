@@ -3,13 +3,18 @@ package com.gearsync.backend.controller;
 import com.gearsync.backend.dto.*;
 import com.gearsync.backend.exception.DuplicateResourceException;
 import com.gearsync.backend.exception.ResourceNotFoundException;
+import com.gearsync.backend.model.User;
+import com.gearsync.backend.repository.UserRepository;
 import com.gearsync.backend.service.AdminServices;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/admin")
@@ -17,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     public final AdminServices adminServices;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/employees")
     public ResponseEntity<?> addEmployee(@Valid @RequestBody EmployeeRegisterDTO employeeRegisterDTO) {
@@ -27,6 +34,37 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (DuplicateResourceException e) {
             return ResponseEntity.status(409).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    @PostMapping("/admins")
+    public ResponseEntity<?> addAdmins(@Valid @RequestBody AdminRegisterDTO adminRegisterDTO) {
+        try {
+            var response = adminServices.addAdmin(adminRegisterDTO);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (DuplicateResourceException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    @GetMapping("/employees")
+    public ResponseEntity<?> getAllEmployees() {
+        try {
+            List<User> users = userRepository.findAllEmployees();
+            List<UserDto> userDtos = users.stream()
+                    .map(user -> {
+                        UserDto dto = new UserDto();
+                        dto.setName(user.getFirstName() + " " + user.getLastName());
+                        dto.setEmail(user.getEmail());
+                        dto.setRole(String.valueOf(user.getRole()));
+                        return dto;
+                    })
+                    .toList();
+            return ResponseEntity.ok(userDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

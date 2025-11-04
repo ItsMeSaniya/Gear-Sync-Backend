@@ -46,7 +46,7 @@ public class AdminServices {
 
 
     @Transactional
-    public Map<String, Object>  addEmployee(EmployeeRegisterDTO employeeRegisterDTO) {
+    public Map<String, Object> addEmployee(EmployeeRegisterDTO employeeRegisterDTO) {
         try {
             if (userRepository.existsByEmail(employeeRegisterDTO.getEmail())) {
                 throw new IllegalArgumentException("Email already registered");
@@ -56,14 +56,35 @@ public class AdminServices {
             user.setPassword(passwordEncoder.encode(generatedPassword));
             user.setIsFirstLogin(true);
             User savedUser = userRepository.save(user);
-            String username = savedUser.getFirstName() + savedUser.getLastName();
-            emailService.sendEmployeeWelcomeEmail(savedUser.getEmail(),username,generatedPassword);
+            String username = savedUser.getFirstName() + " " + savedUser.getLastName();
+            emailService.sendEmployeeWelcomeEmail(savedUser.getEmail(),username,generatedPassword,"Employee");
             Map<String, Object> response = new HashMap<>();
             response.put("user-email", savedUser.getEmail());
             response.put("message", "Employee added successfully");
             return response;
         } catch (DuplicateResourceException e) {
             throw new DuplicateResourceException("User with email " + employeeRegisterDTO.getEmail() + " already exists.");
+        }
+    }
+    @Transactional
+    public Map<String, Object> addAdmin(AdminRegisterDTO adminRegisterDTO) {
+        try {
+            if (userRepository.existsByEmail(adminRegisterDTO.getEmail())) {
+                throw new IllegalArgumentException("Email already registered");
+            }
+            User user = modelMapper.map(adminRegisterDTO, User.class);
+            String generatedPassword = passwordManagementService.generateTemporaryPassword();
+            user.setPassword(passwordEncoder.encode(generatedPassword));
+            user.setIsFirstLogin(true);
+            User savedUser = userRepository.save(user);
+            String username = savedUser.getFirstName() + savedUser.getLastName();
+            emailService.sendEmployeeWelcomeEmail(savedUser.getEmail(),username,generatedPassword,"Admin");
+            Map<String, Object> response = new HashMap<>();
+            response.put("user-email", savedUser.getEmail());
+            response.put("message", "Admin added successfully");
+            return response;
+        } catch (DuplicateResourceException e) {
+            throw new DuplicateResourceException("User with email " + adminRegisterDTO.getEmail() + " already exists.");
         }
     }
 

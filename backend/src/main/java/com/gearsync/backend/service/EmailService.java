@@ -27,10 +27,10 @@ public class EmailService {
     private String appUrl;
 
 
-    public void sendEmployeeWelcomeEmail(String toEmail, String employeeName, String tempPassword) {
+    public void sendEmployeeWelcomeEmail(String toEmail, String employeeName, String tempPassword, String role) {
         try {
             String subject = "Welcome to " + appName + " - Your Account Details";
-            String htmlContent = buildWelcomeEmailHtml(employeeName, toEmail, tempPassword);
+            String htmlContent = buildWelcomeEmailHtml(employeeName, toEmail, tempPassword,role);
             sendHtmlEmail(toEmail, subject, htmlContent);
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,7 +70,7 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    private String buildWelcomeEmailHtml(String employeeName, String email, String tempPassword) {
+    private String buildWelcomeEmailHtml(String employeeName, String email, String tempPassword,String role) {
         return String.format("""
         <!DOCTYPE html>
         <html>
@@ -175,12 +175,12 @@ public class EmailService {
             <div class="container">
                 <div class="header">
                     <h1>🚗 Welcome to %s</h1>
-                    <p style="margin: 10px 0 0 0;">Your Employee Account Has Been Created</p>
+                    <p style="margin: 10px 0 0 0;">Your %s Account Has Been Created</p>
                 </div>
                 
                 <div class="content">
                     <h2>Hello %s! 👋</h2>
-                    <p>Your employee account has been successfully created. Welcome to the team!</p>
+                    <p>Your %s account has been successfully created. Welcome to the team!</p>
                     
                     <div class="credentials-box">
                         <h3 style="margin-top: 0; color: #667eea;">🔐 Your Login Credentials</h3>
@@ -230,7 +230,7 @@ public class EmailService {
             </div>
         </body>
         </html>
-        """, appName, employeeName, email, tempPassword, appUrl, appName, LocalDateTime.now().getYear(), appName);
+        """, appName,role, employeeName, role, email, tempPassword, appUrl, appName, LocalDateTime.now().getYear(), appName);
     }
 
 
