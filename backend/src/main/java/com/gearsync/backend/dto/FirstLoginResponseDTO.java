@@ -5,12 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
-    private Long id;
-    private String name;
+@AllArgsConstructor
+public class FirstLoginResponseDTO {
+    private Boolean requirePasswordChange;
+    private String message;
     private String email;
-    private String role;
-    private String phoneNumber;
 }
