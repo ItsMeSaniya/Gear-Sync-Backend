@@ -2,17 +2,20 @@ import api from "./auth";
 
 export interface ServiceItem {
   id?: number;
-  name: string;
+  serviceName: string;
   category?: string;
   description?: string;
-  price?: number;
+  basePrice?: number;
+  estimatedDurationMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface AdminServiceDTO {
   serviceName: string;
-  serviceType?: string;
   description?: string;
-  price?: number;
+  basePrice: number;
+  estimatedDurationMinutes: number;
+  category: string; // must match backend ServiceCategory values
 }
 
 // Public/admin view list of services
@@ -27,5 +30,14 @@ export const addService = async (payload: AdminServiceDTO): Promise<string> => {
   return res.data;
 };
 
+// Admin update a service
+export const updateService = async (id: number, payload: AdminServiceDTO): Promise<string> => {
+  const res = await api.put<string>(`/admin/service/${id}/update`, payload);
+  return res.data;
+};
 
-
+// Admin delete a service
+export const deleteService = async (id: number): Promise<string> => {
+  const res = await api.delete<string>(`/admin/service/${id}/delete`);
+  return res.data;
+};
