@@ -1,10 +1,10 @@
 // src/pages/Employee/MyAssignments.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Calendar, Clock, Car, User } from "lucide-react";
-import { listAssignedAppointments, EmployeeAppointmentDTO } from "../../api/employee";
+import { listAssignedAppointments, } from "../../api/employee";
 
 const MyAssignments: React.FC = () => {
-  const [assignments, setAssignments] = useState<EmployeeAppointmentDTO[]>([]);
+  const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
