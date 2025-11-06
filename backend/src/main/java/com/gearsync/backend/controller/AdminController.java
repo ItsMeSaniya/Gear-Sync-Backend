@@ -59,9 +59,9 @@ public class AdminController {
             List<UserDto> userDtos = users.stream()
                     .map(user -> {
                         UserDto dto = new UserDto();
-                        dto.setId(user.getId());
-                        dto.setEmail(user.getEmail());
+                        dto.setId(user.getId()); 
                         dto.setName(user.getFirstName() + " " + user.getLastName());
+                        dto.setEmail(user.getEmail());
                         dto.setFirstName(user.getFirstName());
                         dto.setLastName(user.getLastName());
                         dto.setPhoneNumber(user.getPhoneNumber());
@@ -404,6 +404,11 @@ public class AdminController {
             return ResponseEntity.ok(employees);
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    @GetMapping("/appointments")
+    public ResponseEntity<?> getAllAppointments() {
+        try {
+            List<AppointmentResponseDTO> list = adminServices.getAllAppointments();
+            return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

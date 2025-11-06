@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -35,12 +35,30 @@ import Tasks from "./pages/Employee/Tasks";
 import Services from "./pages/Employee/Services";
 import EmployeeProfile from "./pages/Employee/EmployeeProfile";
 
+// Component to conditionally render Navbar
+const ConditionalNavbar: React.FC = () => {
+  const location = useLocation();
+  
+  // Hide navbar on dashboard routes
+  const hiddenRoutes = [
+    '/admin-dashboard',
+    '/employee-dashboard',
+    '/customer-dashboard',
+  ];
+  
+  const shouldHideNavbar = hiddenRoutes.some(route => 
+    location.pathname.startsWith(route)
+  );
+  
+  return shouldHideNavbar ? null : <Navbar />;
+};
+
 const App: React.FC = () => {
   return (
     
     <AuthProvider>
       <Router>
-        <Navbar />
+        <ConditionalNavbar />
         <Routes>
           <Route path="/" element={<Home />} />
           {/* public login route */}
