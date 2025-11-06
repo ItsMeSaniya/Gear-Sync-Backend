@@ -24,7 +24,7 @@ export type ProjectStatus =
 
 /** Payload used by employee to update status or leave a note */
 export interface EmployeeStatusUpdateDTO {
-  status: string;   // keep generic if your backend validates; or restrict to AppointmentStatus | ProjectStatus
+  status: AppointmentStatus | ProjectStatus;
   notes?: string;
 }
 
@@ -131,7 +131,7 @@ export interface TimeLogUpdateDTO {
 
 /** ---- Helpers ---- */
 
-const ensureArray = <T,>(data: unknown): T[] => (Array.isArray(data) ? data as T[] : []);
+const ensureArray = <T,>(data: unknown): T[] => (Array.isArray(data) ? (data as T[]) : []);
 
 /** =========================
  *  Appointments (Employee)
