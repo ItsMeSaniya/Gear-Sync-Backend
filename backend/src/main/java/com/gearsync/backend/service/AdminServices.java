@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -479,4 +480,23 @@ public class AdminServices {
 
         return dto;
     }
+
+
+@Transactional
+public List<AppointmentResponseDTO> getAllAppointments() {
+    // uses the fetch-joined repo query you added earlier
+    List<Appointment> all = appointmentRepository.findAllWithDetails();
+
+    return all.stream()
+        .map(a -> {
+            // Safely collect services from the entity’s actual field name
+            List<Services> services = new ArrayList<>();
+            Set<Services> svcSet = a.getAppointmentServices(); // <-- your real accessor
+            if (svcSet != null && !svcSet.isEmpty()) {
+                services = new ArrayList<>(svcSet);
+            }
+            return convertAppointmentToResponseDTO(a, services);
+        })
+        .collect(Collectors.toList());
+}
 }

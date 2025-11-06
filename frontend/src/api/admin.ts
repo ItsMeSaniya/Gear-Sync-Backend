@@ -36,3 +36,11 @@ export const listEmployees = async () => {
   const res = await api.get("admin/employees");
   return Array.isArray(res.data) ? res.data : [];
 };
+
+export interface EmployeeLite {
+  id: number;         // NEEDS to be present from backend
+  name: string;       // "First Last"
+  email: string;
+  role: "EMPLOYEE" | "ADMIN" | "CUSTOMER";
+  phoneNumber?: string;
+}

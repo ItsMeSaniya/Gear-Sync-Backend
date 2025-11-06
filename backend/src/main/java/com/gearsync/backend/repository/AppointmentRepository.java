@@ -85,4 +85,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            where a.status = :status
            """)
     BigDecimal sumFinalCostByStatus(AppointmentStatus status);
+
+     @Query("""
+        select distinct a
+        from Appointment a
+        left join fetch a.customer c
+        left join fetch a.vehicle v
+        left join fetch a.assignedEmployee e
+        left join fetch a.appointmentServices s
+        order by a.createdAt desc
+    """)
+    List<Appointment> findAllWithDetails();
 }
