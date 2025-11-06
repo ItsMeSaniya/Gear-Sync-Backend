@@ -1,112 +1,38 @@
 // src/api/admin.ts
 import api from "./auth";
 
-export type Role = "CUSTOMER" | "EMPLOYEE" | "ADMIN";
-
-export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
+export interface EmployeeRegisterPayload {
   email: string;
-  phoneNumber: string;
-  role: Role;
-  isActive: boolean;
-  createdAt: string; // ISO string
-}
-
-export interface EmployeeRegisterDTO {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  password: string;
-}
-
-// Admin has same shape as employee creation:
-export type AdminRegisterDTO = EmployeeRegisterDTO;
-
-export const addEmployee = async (payload: EmployeeRegisterDTO): Promise<User> => {
-  const { data } = await api.post<User>("/admin/employees", payload);
-  return data;
-};
-
-export const addAdmin = async (payload: AdminRegisterDTO): Promise<User> => {
-  const { data } = await api.post<User>("/admin/admins", payload);
-  return data;
-};
-
-export const listEmployees = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>("/admin/employees");
-  return data;
-};
-
-// User Management
-export interface UpdateUserDTO {
   firstName?: string;
   lastName?: string;
-  email?: string;
   phoneNumber?: string;
-  isActive?: boolean;
+  // role is optional; server defaults to EMPLOYEE
+  role?: "EMPLOYEE";
 }
 
-export const updateUser = async (userId: number, payload: UpdateUserDTO): Promise<User> => {
-  const { data } = await api.put<User>(`/admin/users/${userId}`, payload);
-  return data;
+export interface AdminRegisterPayload {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  // role is optional; server defaults to ADMIN
+  role?: "ADMIN";
+}
+
+// Create Employee
+export const addEmployee = async (payload: EmployeeRegisterPayload) => {
+  const res = await api.post("admin/employees", payload);
+  return res.data;
 };
 
-export const deleteUser = async (userId: number): Promise<void> => {
-  await api.delete(`/admin/users/${userId}`);
+// Create Admin
+export const addAdmin = async (payload: AdminRegisterPayload) => {
+  const res = await api.post("admin/admins", payload);
+  return res.data;
 };
 
-export const toggleUserStatus = async (userId: number, isActive: boolean): Promise<User> => {
-  const { data } = await api.put<User>(`/admin/users/${userId}/status`, { isActive });
-  return data;
-};
-
-// ----- Appointments
-export interface AssignAppointmentDTO { employeeId: number; }
-
-export const assignEmployeeToAppointment = async (
-  id: number,
-  payload: AssignAppointmentDTO
-): Promise<void> => {
-  await api.put(`/admin/appointments/${id}/assign`, payload);
-};
-
-export const reassignEmployeeToAppointment = async (
-  id: number,
-  payload: AssignAppointmentDTO
-): Promise<void> => {
-  await api.put(`/admin/appointments/${id}/reassign`, payload);
-};
-
-export const unassignEmployeeFromAppointment = async (id: number): Promise<void> => {
-  await api.delete(`/admin/appointments/${id}/unassign`);
-};
-
-// ----- Projects
-export interface ApproveProjectDTO { employeeId: number; notes?: string; }
-export interface RejectProjectDTO { reason: string; }
-export interface AssignProjectDTO { employeeId: number; }
-
-export const approveAndAssignProject = async (
-  id: number,
-  payload: ApproveProjectDTO
-): Promise<void> => {
-  await api.put(`/admin/projects/${id}/approve`, payload);
-};
-
-export const rejectProject = async (id: number, payload: RejectProjectDTO): Promise<void> => {
-  await api.put(`/admin/projects/${id}/reject`, payload);
-};
-
-export const assignEmployeeToProject = async (
-  id: number,
-  payload: AssignProjectDTO
-): Promise<void> => {
-  await api.put(`/admin/projects/${id}/assign`, payload);
-};
-
-export const unassignEmployeeFromProject = async (id: number): Promise<void> => {
-  await api.delete(`/admin/projects/${id}/unassign`);
+// List employees (AdminController returns simplified DTO with name/email/role)
+export const listEmployees = async () => {
+  const res = await api.get("admin/employees");
+  return Array.isArray(res.data) ? res.data : [];
 };
